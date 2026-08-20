@@ -1,0 +1,17 @@
+{
+  "name": "webcmd-adapters",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Webcmd plugin adapters for the Interactive Demo Hub — one per execution strategy.",
+  "type": "commonjs",
+  "scripts": {
+    "public-status": "node public-status.js",
+    "billing-login": "node billing-cookie.js login",
+    "billing-fetch": "node billing-cookie.js billing",
+    "tickets-intercept": "node tickets-intercept.js",
+    "server-wizard": "node server-wizard-ui.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
