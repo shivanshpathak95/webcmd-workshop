@@ -1,4 +1,4 @@
-# Webcmd Interactive Demo Hub
+# Webcmd Interactive Demo
 
 A small full-stack app that doubles as a live demo of Webcmd's four
 execution strategies (`PUBLIC`, `COOKIE`, `INTERCEPT`, `UI`). This README is
