@@ -18,7 +18,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { BACKEND_URL, ok, fail, emit, parseArgs } = require("./_shared");
+const { ok, fail, emit, parseArgs, fetchWithTimeout, resolveBackendUrl } = require("./_shared");
 
 const PROFILE_DIR = process.env.WEBCMD_PROFILE_DIR || path.join(__dirname, ".profiles");
 
@@ -29,6 +29,7 @@ const manifest = {
   browserRequired: false,
   args: [
     { name: "profile", required: true, description: "Cookie jar profile name, e.g. demo-user" },
+    { name: "base-url", required: false, description: "Backend origin, default http://localhost:4000" },
     { name: "username", required: false, description: "login subcommand only" },
     { name: "password", required: false, description: "login subcommand only" },
   ],
@@ -62,10 +63,11 @@ function extractCookiePair(setCookieHeader) {
 async function login(args) {
   const endpoint = "/api/login";
   const profile = args.profile;
+  const baseUrl = resolveBackendUrl(args);
   if (!profile) return fail("COOKIE", endpoint, "missing --profile");
 
   try {
-    const res = await fetch(BACKEND_URL + endpoint, {
+    const res = await fetchWithTimeout(baseUrl + endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: args.username || "demo", password: args.password || "demo" }),
@@ -83,6 +85,7 @@ async function login(args) {
 async function billing(args) {
   const endpoint = "/api/billing";
   const profile = args.profile;
+  const baseUrl = resolveBackendUrl(args);
   if (!profile) return fail("COOKIE", endpoint, "missing --profile");
 
   const jar = readJar(profile);
@@ -91,7 +94,7 @@ async function billing(args) {
   }
 
   try {
-    const res = await fetch(BACKEND_URL + endpoint, {
+    const res = await fetchWithTimeout(baseUrl + endpoint, {
       headers: { Cookie: jar.cookie },
     });
     if (res.status === 401) {
@@ -121,7 +124,7 @@ async function run(argv) {
 }
 
 if (require.main === module) {
-  run(process.argv.slice(2)).then(emit);
+  run(process.argv.slice(2)).then(emit).catch((err) => emit(fail("COOKIE", "/api/billing", err)));
 }
 
 module.exports = { manifest, login, billing, run };

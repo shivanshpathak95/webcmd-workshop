@@ -8,7 +8,7 @@ export default function AppLayout({ children }) {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-surface-950 text-slate-200">
       <div
-        className={`flex-none overflow-hidden border-r border-surface-700 transition-all duration-300 ease-in-out ${
+        className={`flex-none overflow-hidden border-r border-neutral-800 transition-all duration-300 ease-in-out ${
           sidebarOpen ? "w-64" : "w-0 border-r-0"
         }`}
       >

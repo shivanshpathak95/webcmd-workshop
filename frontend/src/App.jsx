@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout.jsx";
 import IntroductionPage from "./pages/IntroductionPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
 import PublicStrategyPage from "./pages/strategies/PublicStrategyPage.jsx";
 import CookieStrategyPage from "./pages/strategies/CookieStrategyPage.jsx";
 import InterceptStrategyPage from "./pages/strategies/InterceptStrategyPage.jsx";
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/strategies/cookie" element={<CookieStrategyPage />} />
         <Route path="/strategies/intercept" element={<InterceptStrategyPage />} />
         <Route path="/strategies/ui" element={<UiStrategyPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppLayout>
   );

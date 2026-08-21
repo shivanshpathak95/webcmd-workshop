@@ -14,6 +14,7 @@
 
 const BACKEND_URL = process.env.WEBCMD_BACKEND_URL || "http://localhost:4000";
 const FRONTEND_URL = process.env.WEBCMD_FRONTEND_URL || "http://localhost:5173";
+const FETCH_TIMEOUT_MS = Number(process.env.WEBCMD_FETCH_TIMEOUT_MS || 10000);
 
 /** Wrap a plugin result in the stable-keys JSON envelope. */
 function ok(strategy, endpoint, data) {
@@ -32,6 +33,31 @@ function nowIso() {
 function emit(result) {
   process.stdout.write(JSON.stringify(result) + "\n");
   process.exitCode = result.ok ? 0 : 1;
+}
+
+/** Fetch with timeout and clearer connection errors. */
+async function fetchWithTimeout(url, options = {}) {
+  const timeoutMs = options.timeoutMs ?? FETCH_TIMEOUT_MS;
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    return res;
+  } catch (err) {
+    if (err.name === "TimeoutError" || err.name === "AbortError") {
+      throw new Error(`request timed out after ${timeoutMs}ms: ${url}`);
+    }
+    if (err.cause?.code === "ECONNREFUSED" || err.code === "ECONNREFUSED") {
+      throw new Error(`backend not reachable at ${url} — is the demo hub running? (npm run dev)`);
+    }
+    throw err;
+  }
+}
+
+/** Resolve backend base URL from args or env. */
+function resolveBackendUrl(args = {}) {
+  return args["base-url"] || BACKEND_URL;
 }
 
 /** Minimal argv --flag value parser shared by all adapters. */
@@ -53,4 +79,15 @@ function parseArgs(argv) {
   return args;
 }
 
-module.exports = { BACKEND_URL, FRONTEND_URL, ok, fail, emit, parseArgs, nowIso };
+module.exports = {
+  BACKEND_URL,
+  FRONTEND_URL,
+  FETCH_TIMEOUT_MS,
+  ok,
+  fail,
+  emit,
+  fetchWithTimeout,
+  resolveBackendUrl,
+  parseArgs,
+  nowIso,
+};

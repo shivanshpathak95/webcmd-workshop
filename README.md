@@ -11,35 +11,42 @@ the *demo*, not the explanation.
 
 ---
 
-## 1. Setup (3 terminals)
+## 1. Setup
 
-**Terminal 1 — backend**
-```bash
-cd backend
-npm install   # first time only
-npm start
-```
-Runs on `http://localhost:4000`.
+**Quick start (recommended)**
 
-**Terminal 2 — frontend**
 ```bash
-cd frontend
-npm install   # first time only
-npm run dev
-```
-Runs on `http://localhost:5173` — open this in a browser.
-
-**Terminal 3 — webcmd-adapters** (used mid-demo, not started continuously)
-```bash
-cd webcmd-adapters
-npm install   # first time only
-npx playwright install chromium   # first time only — needed for the two browser-based adapters
+npm run setup          # first time only — installs all packages + Playwright Chromium
+npm run dev            # terminal 1 — backend :4000 + frontend :5173
+npm run health         # verify before the audience arrives
+npm run verify-demo    # smoke-test all four adapters
 ```
 
-Verify everything's wired up before the audience shows up:
+Open `http://localhost:5173` in a browser.
+
+**Manual setup (3 terminals)**
+
+If you prefer separate terminals:
+
 ```bash
-curl http://localhost:4000/api/health   # {"ok":true}
+# Terminal 1 — backend (:4000)
+cd backend && npm install && npm start
+
+# Terminal 2 — frontend (:5173)
+cd frontend && npm install && npm run dev
+
+# Terminal 3 — adapters (used mid-demo, not started continuously)
+cd webcmd-adapters && npm install && npx playwright install chromium
 ```
+
+Verify everything's wired up:
+
+```bash
+npm run health
+# or: curl http://localhost:4000/api/health   # {"ok":true}
+```
+
+For Webcmd CLI setup (`webcmd doctor`, skills), see [`docs/WEBCMD_SETUP.md`](docs/WEBCMD_SETUP.md).
 
 ---
 
@@ -110,7 +117,7 @@ without falling back to blind DOM-scraping every time."
 | `EADDRINUSE` on 4000 or 5173 | Something from a previous run is still up — `lsof -i :4000` / `:5173`, kill the PID |
 | `tickets-intercept.js` / `server-wizard-ui.js` error "playwright is not installed" | `cd webcmd-adapters && npm install && npx playwright install chromium` |
 | `billing-cookie.js billing` fails with "no session" | Expected — run the `login` subcommand first |
-| Cookie page shows logged-in state you didn't expect | A previous demo run's cookie is still in the browser — open the page in an incognito window |
+| Cookie page shows logged-in state you didn't expect | Click **Log out** on the billing dashboard, or clear cookies for localhost |
 
 ---
 
