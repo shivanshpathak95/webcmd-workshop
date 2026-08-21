@@ -1,48 +1,37 @@
 import { useEffect, useState } from "react";
-import { Cpu, MemoryStick, Activity, Clock, RefreshCw, AlertTriangle, Eye } from "lucide-react";
+import { Cpu, MemoryStick, Activity, Clock, RefreshCw, AlertTriangle, LogOut } from "lucide-react";
 import SplitPane from "../../components/SplitPane.jsx";
 import CodeBlock from "../../components/CodeBlock.jsx";
+import LiveTargetNote from "../../components/LiveTargetNote.jsx";
+import ExpectedOutputPanel from "../../components/ExpectedOutputPanel.jsx";
+import StrategyNavFooter from "../../components/StrategyNavFooter.jsx";
 import { STRATEGY_THEMES } from "../../theme.js";
 
 const T = STRATEGY_THEMES.PUBLIC;
 
-/** Bridges the Guide pane to the Live Target on the right — what it shows,
- *  and exactly what to click to see the strategy play out. */
-function LiveTargetNote({ children }) {
-  return (
-    <div className="rounded-lg border border-surface-600 bg-surface-900/60 p-4">
-      <div className="mb-1.5 flex items-center gap-2">
-        <Eye size={14} className={T.icon} />
-        <span className={`text-xs font-semibold uppercase tracking-wider ${T.label}`}>Live Target — try it</span>
-      </div>
-      <p className="text-sm leading-relaxed text-slate-400">{children}</p>
-    </div>
-  );
-}
-
 const METRICS = [
-  { key: "cpuUsagePercent", label: "CPU Usage", icon: Cpu, suffix: "%" },
-  { key: "memoryUsagePercent", label: "Memory Usage", icon: MemoryStick, suffix: "%" },
-  { key: "activeConnections", label: "Active Connections", icon: Activity, suffix: "" },
-  { key: "uptimeSeconds", label: "Uptime", icon: Clock, suffix: "h", transform: (v) => Math.floor(v / 3600) },
+  { key: "cpuUsagePercent", label: "CPU Usage", icon: Cpu, suffix: "%", testId: "metric-cpu" },
+  { key: "memoryUsagePercent", label: "Memory Usage", icon: MemoryStick, suffix: "%", testId: "metric-memory" },
+  { key: "activeConnections", label: "Active Connections", icon: Activity, suffix: "", testId: "metric-connections" },
+  { key: "uptimeSeconds", label: "Uptime", icon: Clock, suffix: "h", testId: "metric-uptime", transform: (v) => Math.floor(v / 3600) },
 ];
 
 function MetricSkeleton() {
   return (
     <div className="card p-4">
-      <div className="mb-3 h-3 w-20 animate-pulse rounded bg-surface-700" />
-      <div className="h-7 w-14 animate-pulse rounded bg-surface-700" />
+      <div className="mb-3 h-3 w-20 animate-pulse rounded bg-elevated" />
+      <div className="h-7 w-14 animate-pulse rounded bg-elevated" />
     </div>
   );
 }
 
 function ServicesSkeleton() {
   return (
-    <div className="card divide-y divide-surface-700">
+    <div className="card divide-y divide-line">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3">
-          <div className="h-2 w-2 animate-pulse rounded-full bg-surface-700" />
-          <div className="h-3 flex-1 animate-pulse rounded bg-surface-700" />
+          <div className="h-2 w-2 animate-pulse rounded-full bg-elevated" />
+          <div className="h-3 flex-1 animate-pulse rounded bg-elevated" />
         </div>
       ))}
     </div>
@@ -51,7 +40,7 @@ function ServicesSkeleton() {
 
 function ServicesList({ services }) {
   return (
-    <div className="card divide-y divide-surface-700">
+    <div className="card divide-y divide-line">
       {services.map((svc) => {
         const isUp = svc.status === "operational";
         return (
@@ -62,11 +51,11 @@ function ServicesList({ services }) {
                   isUp ? "bg-emerald-400" : "bg-amber-400 animate-pulseDot"
                 }`}
               />
-              <span className="text-sm text-slate-200">{svc.name}</span>
-              <span className="font-mono text-[10px] text-slate-600">{svc.region}</span>
+              <span className="text-sm text-ink">{svc.name}</span>
+              <span className="font-mono text-[10px] text-faint">{svc.region}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs tabular-nums text-slate-500">{svc.latencyMs}ms</span>
+              <span className="font-mono text-xs tabular-nums text-faint">{svc.latencyMs}ms</span>
               <span
                 className={`pill border ${
                   isUp
@@ -114,20 +103,37 @@ function ServerStatusTarget() {
 
   return (
     <div data-testid="server-status-panel" className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-100">Server Status</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-lg font-semibold text-ink">Server Status</h3>
         <button
           onClick={fetchStatus}
           data-testid="refresh-status-btn"
-          className="btn-secondary py-1.5 text-xs hover:border-sky-500/40 hover:text-sky-300"
+          className="btn-secondary py-1.5 text-xs"
         >
-          <RefreshCw size={13} className={refreshing ? "animate-spin text-sky-400" : ""} />
+          <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
 
+      {status && (
+        <div className="flex flex-wrap items-center gap-3 text-xs text-faint">
+          <span
+            data-testid="status-overall-badge"
+            className="pill border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+          >
+            {status.status}
+          </span>
+          <span data-testid="status-version">v{status.version}</span>
+          <span data-testid="status-region">{status.region}</span>
+          <span data-testid="status-timestamp">{new Date(status.timestamp).toLocaleString()}</span>
+        </div>
+      )}
+
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400" data-testid="status-error">
+        <div
+          className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+          data-testid="status-error"
+        >
           <AlertTriangle size={15} />
           Failed to fetch: {error}
         </div>
@@ -147,22 +153,26 @@ function ServerStatusTarget() {
               const raw = status.metrics[m.key];
               const value = m.transform ? m.transform(raw) : raw;
               return (
-                <div key={m.key} className="card card-hover p-4 hover:border-sky-500/30 hover:shadow-sky-500/10">
-                  <div className="mb-2 flex items-center gap-1.5 text-slate-500">
-                    <m.icon size={13} className="text-sky-400/70" />
+                <div
+                  key={m.key}
+                  data-testid={m.testId}
+                  className="card card-hover p-4"
+                >
+                  <div className="mb-2 flex items-center gap-1.5 text-faint">
+                    <m.icon size={13} />
                     <p className="text-xs">{m.label}</p>
                   </div>
-                  <p className="text-2xl font-semibold tabular-nums text-slate-100">
+                  <p className="text-2xl font-semibold tabular-nums text-ink">
                     {value}
-                    <span className="text-base text-slate-500">{m.suffix}</span>
+                    <span className="text-base text-faint">{m.suffix}</span>
                   </p>
                 </div>
               );
             })}
       </div>
 
-      <p className="flex items-center gap-1.5 text-xs text-slate-500">
-        <code className="font-mono text-slate-400">GET /api/public/status</code>
+      <p className="flex items-center gap-1.5 text-xs text-faint">
+        <code className="font-mono text-muted">GET /api/public/status</code>
         {lastFetched && <span>· updated {lastFetched.toLocaleTimeString()}</span>}
       </p>
     </div>
@@ -173,41 +183,38 @@ function PublicGuide() {
   return (
     <div className="space-y-6">
       <span className={`pill border ${T.pill}`}>Strategy 01</span>
-      <h1 className="text-2xl font-bold text-slate-50">Public Bypass</h1>
-      <p className="leading-relaxed text-slate-400">
-        Some data doesn't need a login and doesn't need a rendered page —
-        it's just an open HTTP endpoint wearing a UI as a courtesy. The{" "}
-        <code className="text-slate-300">PUBLIC</code> strategy skips the
+      <h1 className="text-2xl font-bold text-ink">Public Bypass</h1>
+      <p className="leading-relaxed text-muted">
+        Some data doesn't need a login and doesn't need a rendered page.
+        It's just an open HTTP endpoint wearing a UI as a courtesy. The{" "}
+        <code className="text-muted">PUBLIC</code> strategy skips the
         browser entirely: no Playwright instance to boot, no DOM to wait on,
         no CSS selectors to keep in sync with a redesign. Just a plain fetch
         straight to the endpoint, parsed into stable JSON.
       </p>
-      <p className="leading-relaxed text-slate-400">
-        This is the cheapest of the four strategies by a wide margin —
-        always reach for it first before assuming you need a browser at all.
+      <p className="leading-relaxed text-muted">
+        This is the cheapest of the four strategies by a wide margin.
+        Always reach for it first before assuming you need a browser at all.
       </p>
 
-      <LiveTargetNote>
+      <LiveTargetNote theme="PUBLIC">
         The panel on the right is a real infra status page, backed by the
-        same Express server — not a screenshot. It auto-refreshes every 4
-        seconds straight from <code className="text-slate-300">GET /api/public/status</code>.
-        Hit <span className="font-medium text-slate-300">Refresh</span> to
+        same Express server, not a screenshot. It auto-refreshes every 4
+        seconds straight from <code className="text-muted">GET /api/public/status</code>.
+        Hit <span className="font-medium text-muted">Refresh</span> to
         force an immediate re-fetch and watch the CPU/memory numbers and
         service latencies change on demand.
       </LiveTargetNote>
 
       <h2 className="section-label">The adapter</h2>
-      <p className="leading-relaxed text-slate-400">
-        <code className="text-slate-300">webcmd-adapters/public-status.js</code>{" "}
-        does exactly this: one <code className="text-slate-300">fetch()</code>{" "}
+      <p className="leading-relaxed text-muted">
+        <code className="text-muted">webcmd-adapters/public-status.js</code>{" "}
+        does exactly this: one <code className="text-muted">fetch()</code>{" "}
         call, no auth, no session state.
       </p>
       <CodeBlock>node webcmd-adapters/public-status.js</CodeBlock>
-      <p className="text-sm leading-relaxed text-slate-500">
-        Returns a single line of stable-keyed JSON — same shape whether the
-        call succeeds or fails:
-      </p>
-      <CodeBlock language="json">{`{
+
+      <ExpectedOutputPanel>{`{
   "ok": true,
   "strategy": "PUBLIC",
   "endpoint": "/api/public/status",
@@ -216,16 +223,15 @@ function PublicGuide() {
     "memoryUsagePercent": 47.9,
     "uptimeSeconds": 128473,
     "activeConnections": 165,
-    "services": [
-      { "name": "API Gateway", "status": "operational", "latencyMs": 24 },
-      { "name": "Postgres Primary", "status": "operational", "latencyMs": 6 }
-    ],
+    "services": [...],
     "region": "us-east-1",
     "version": "1.4.2"
   },
   "error": null,
   "fetchedAt": "2026-08-21T00:00:00.000Z"
-}`}</CodeBlock>
+}`}</ExpectedOutputPanel>
+
+      <StrategyNavFooter />
     </div>
   );
 }

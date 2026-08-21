@@ -1,0 +1,12 @@
+# dependencies (never commit these)
+node_modules/
+
+# build output
+frontend/dist/
+
+# local / secrets
+webcmd-adapters/.profiles/
+.env
+*.log
+.DS_Store
+

@@ -1,24 +1,13 @@
 import { useState } from "react";
-import { Server, MapPin, ClipboardCheck, CheckCircle2, ArrowLeft, ArrowRight, RotateCcw, Eye } from "lucide-react";
+import { Server, MapPin, ClipboardCheck, CheckCircle2, ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
 import SplitPane from "../../components/SplitPane.jsx";
 import CodeBlock from "../../components/CodeBlock.jsx";
+import LiveTargetNote from "../../components/LiveTargetNote.jsx";
+import ExpectedOutputPanel from "../../components/ExpectedOutputPanel.jsx";
+import StrategyNavFooter from "../../components/StrategyNavFooter.jsx";
 import { STRATEGY_THEMES } from "../../theme.js";
 
 const T = STRATEGY_THEMES.UI;
-
-/** Bridges the Guide pane to the Live Target on the right — what it shows,
- *  and exactly what to click to see the strategy play out. */
-function LiveTargetNote({ children }) {
-  return (
-    <div className="rounded-lg border border-surface-600 bg-surface-900/60 p-4">
-      <div className="mb-1.5 flex items-center gap-2">
-        <Eye size={14} className={T.icon} />
-        <span className={`text-xs font-semibold uppercase tracking-wider ${T.label}`}>Live Target — try it</span>
-      </div>
-      <p className="text-sm leading-relaxed text-slate-400">{children}</p>
-    </div>
-  );
-}
 
 const REGIONS = ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1"];
 
@@ -56,11 +45,11 @@ function ServerWizardTarget() {
         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
           <CheckCircle2 size={22} />
         </div>
-        <h3 className="text-lg font-semibold text-slate-100">Server Instance Created</h3>
-        <p className="mb-5 mt-1.5 text-sm leading-relaxed text-slate-400">
-          <span className="font-medium text-slate-200">{form.name}</span> is
+        <h3 className="text-lg font-semibold text-ink">Server Instance Created</h3>
+        <p className="mb-5 mt-1.5 text-sm leading-relaxed text-muted">
+          <span className="font-medium text-ink">{form.name}</span> is
           being provisioned in{" "}
-          <span className="text-slate-200">{form.region}</span> (
+          <span className="text-ink">{form.region}</span> (
           {REGION_SPECS[form.region].vcpu} vCPU · {REGION_SPECS[form.region].ramGb}GB RAM, ~$
           {REGION_SPECS[form.region].hourly.toFixed(3)}/hr).
         </p>
@@ -74,8 +63,8 @@ function ServerWizardTarget() {
   return (
     <div data-testid="server-wizard" className="card max-w-md p-6">
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-100">Create a New Server Instance</h3>
-        <span className="font-mono text-xs text-slate-500">Step {step} of 3</span>
+        <h3 className="text-lg font-semibold text-ink">Create a New Server Instance</h3>
+        <span className="font-mono text-xs text-ink0">Step {step} of 3</span>
       </div>
 
       {/* Step indicator */}
@@ -91,14 +80,14 @@ function ServerWizardTarget() {
                   done
                     ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
                     : active
-                      ? "border-orange-500 bg-orange-500/10 text-orange-300"
-                      : "border-surface-600 text-slate-600"
+                      ? "border-neutral-500 bg-elevated text-ink"
+                      : "border-line text-faint"
                 }`}
               >
                 {done ? <CheckCircle2 size={13} /> : <s.icon size={13} />}
               </div>
               {n < 3 && (
-                <div className={`h-px flex-1 transition-colors ${done ? "bg-emerald-500/40" : "bg-surface-600"}`} />
+                <div className={`h-px flex-1 transition-colors ${done ? "bg-emerald-500/40" : "bg-line"}`} />
               )}
             </div>
           );
@@ -108,7 +97,7 @@ function ServerWizardTarget() {
       <div className="animate-fadeIn min-h-[92px]">
         {step === 1 && (
           <div data-testid="wizard-step-1" className="space-y-2">
-            <label className="text-sm text-slate-400" htmlFor="instance-name">
+            <label className="text-sm text-muted" htmlFor="instance-name">
               Instance Name
             </label>
             <input
@@ -125,7 +114,7 @@ function ServerWizardTarget() {
 
         {step === 2 && (
           <div data-testid="wizard-step-2" className="space-y-2">
-            <label className="text-sm text-slate-400" htmlFor="instance-region">
+            <label className="text-sm text-muted" htmlFor="instance-region">
               Region
             </label>
             <select
@@ -145,26 +134,26 @@ function ServerWizardTarget() {
         )}
 
         {step === 3 && (
-          <div data-testid="wizard-step-3" className="space-y-2.5 rounded-lg border border-surface-600 bg-surface-800/60 p-4">
+          <div data-testid="wizard-step-3" className="space-y-2.5 rounded-lg border border-line bg-elevated p-4">
             <p className="section-label">Review</p>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">Name</span>
-              <span className="font-medium text-slate-100">{form.name || "(empty)"}</span>
+              <span className="text-ink0">Name</span>
+              <span className="font-medium text-ink">{form.name || "(empty)"}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">Region</span>
-              <span className="font-medium text-slate-100">{form.region}</span>
+              <span className="text-ink0">Region</span>
+              <span className="font-medium text-ink">{form.region}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">Specs</span>
-              <span className="font-medium text-slate-100">
+              <span className="text-ink0">Specs</span>
+              <span className="font-medium text-ink">
                 {REGION_SPECS[form.region].vcpu} vCPU · {REGION_SPECS[form.region].ramGb}GB RAM ·{" "}
                 {REGION_SPECS[form.region].ssdGb}GB SSD
               </span>
             </div>
-            <div className="flex items-center justify-between border-t border-surface-700 pt-2.5 text-sm">
-              <span className="text-slate-500">Est. cost</span>
-              <span className="font-medium text-orange-300">
+            <div className="flex items-center justify-between border-t border-line pt-2.5 text-sm">
+              <span className="text-ink0">Est. cost</span>
+              <span className="font-medium text-ink">
                 ${REGION_SPECS[form.region].hourly.toFixed(3)}/hr
               </span>
             </div>
@@ -205,36 +194,36 @@ function UiGuide() {
   return (
     <div className="space-y-6">
       <span className={`pill border ${T.pill}`}>Strategy 04</span>
-      <h1 className="text-2xl font-bold text-slate-50">Complex UI Automation</h1>
-      <p className="leading-relaxed text-slate-400">
-        Sometimes there just isn't an API to bypass to — the wizard on the
+      <h1 className="text-2xl font-bold text-ink">Complex UI Automation</h1>
+      <p className="leading-relaxed text-muted">
+        Sometimes there just isn't an API to bypass to. The wizard on the
         right has no backend at all, it's pure client-side state. This is
         the fallback of last resort: the{" "}
-        <code className="text-slate-300">UI</code> strategy drives the real
+        <code className="text-muted">UI</code> strategy drives the real
         DOM, clicking through the same steps a human would.
       </p>
-      <p className="leading-relaxed text-slate-400">
+      <p className="leading-relaxed text-muted">
         The one thing that makes this reliable instead of brittle:{" "}
-        <code className="text-slate-300">data-testid</code> attributes.
-        Every input, button, and container on this page carries one — a
+        <code className="text-muted">data-testid</code> attributes.
+        Every input, button, and container on this page carries one: a
         selector contract that survives a redesign even when class names
         and layout don't.
       </p>
 
-      <LiveTargetNote>
-        The wizard on the right has no backend at all — every step is
+      <LiveTargetNote theme="UI">
+        The wizard on the right has no backend at all. Every step is
         client-side React state. Type a name, pick a region, and watch the
         review step compute specs and an hourly cost live. Submit to see
         the success state, then hit{" "}
-        <span className="font-medium text-slate-300">Create Another</span>{" "}
+        <span className="font-medium text-muted">Create Another</span>{" "}
         to reset and run through it again.
       </LiveTargetNote>
 
       <h2 className="section-label">The adapter</h2>
-      <p className="leading-relaxed text-slate-400">
-        <code className="text-slate-300">webcmd-adapters/server-wizard-ui.js</code>{" "}
+      <p className="leading-relaxed text-muted">
+        <code className="text-muted">webcmd-adapters/server-wizard-ui.js</code>{" "}
         walks all three steps by{" "}
-        <code className="text-slate-300">data-testid</code>, then waits for
+        <code className="text-muted">data-testid</code>, then waits for
         the success panel to confirm the submit actually landed:
       </p>
       <CodeBlock>node webcmd-adapters/server-wizard-ui.js --name prod-api-01 --region eu-west-1</CodeBlock>
@@ -244,6 +233,17 @@ await page.getByTestId("wizard-select-region").selectOption(region);
 await page.getByTestId("wizard-next-btn").click();
 await page.getByTestId("wizard-submit-btn").click();
 await page.getByTestId("wizard-success").waitFor();`}</CodeBlock>
+
+      <ExpectedOutputPanel>{`{
+  "ok": true,
+  "strategy": "UI",
+  "endpoint": "/strategies/ui",
+  "data": { "instanceName": "prod-api-01", "region": "eu-west-1", "created": true },
+  "error": null,
+  "fetchedAt": "..."
+}`}</ExpectedOutputPanel>
+
+      <StrategyNavFooter />
     </div>
   );
 }

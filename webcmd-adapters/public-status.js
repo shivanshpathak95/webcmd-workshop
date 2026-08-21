@@ -11,7 +11,7 @@
  *   node public-status.js --base-url http://localhost:4000
  */
 
-const { BACKEND_URL, ok, fail, emit, parseArgs } = require("./_shared");
+const { ok, fail, emit, parseArgs, fetchWithTimeout, resolveBackendUrl } = require("./_shared");
 
 const manifest = {
   site: "webcmd-demo-hub",
@@ -25,11 +25,14 @@ const manifest = {
 };
 
 async function run(args = {}) {
-  const baseUrl = args["base-url"] || BACKEND_URL;
+  const baseUrl = resolveBackendUrl(args);
   const endpoint = "/api/public/status";
   try {
-    const res = await fetch(baseUrl + endpoint);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetchWithTimeout(baseUrl + endpoint);
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+    }
     const body = await res.json();
     return ok("PUBLIC", endpoint, {
       cpuUsagePercent: body.metrics?.cpuUsagePercent ?? null,
@@ -46,7 +49,7 @@ async function run(args = {}) {
 }
 
 if (require.main === module) {
-  run(parseArgs(process.argv.slice(2))).then(emit);
+  run(parseArgs(process.argv.slice(2))).then(emit).catch((err) => emit(fail("PUBLIC", "/api/public/status", err)));
 }
 
 module.exports = { manifest, run };

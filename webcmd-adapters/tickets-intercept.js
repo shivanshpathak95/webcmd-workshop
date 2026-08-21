@@ -67,7 +67,7 @@ async function run(args = {}) {
 }
 
 if (require.main === module) {
-  run(parseArgs(process.argv.slice(2))).then(emit);
+  run(parseArgs(process.argv.slice(2))).then(emit).catch((err) => emit(fail("INTERCEPT", "/api/internal/tickets", err)));
 }
 
 module.exports = { manifest, run };

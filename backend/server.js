@@ -16,12 +16,18 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
 // --- Middleware -------------------------------------------------------
 
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.path}`);
+  next();
+});
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite dev server default
+    origin: CORS_ORIGIN,
     credentials: true, // required so the browser sends/receives cookies
   })
 );
@@ -88,6 +94,11 @@ app.post("/api/login", (req, res) => {
   res.json({ success: true, message: `Logged in as ${username}` });
 });
 
+app.post("/api/logout", (req, res) => {
+  res.clearCookie(SESSION_COOKIE_NAME);
+  res.json({ success: true, message: "Logged out" });
+});
+
 app.get("/api/billing", (req, res) => {
   const sessionCookie = req.cookies?.[SESSION_COOKIE_NAME];
 
@@ -123,7 +134,7 @@ app.get("/api/billing", (req, res) => {
 // instead of scraping the rendered DOM table.
 
 const MOCK_TICKETS = [
-  { id: "TCK-2041", subject: "MFA reset stuck — locked out of admin console", priority: "high", status: "open", customer: "sarah.chen@northwind.io", assignee: "Maria Alva", tags: ["auth", "mfa"], createdAt: "2026-08-20T09:15:00Z" },
+  { id: "TCK-2041", subject: "MFA reset stuck: locked out of admin console", priority: "high", status: "open", customer: "sarah.chen@northwind.io", assignee: "Maria Alva", tags: ["auth", "mfa"], createdAt: "2026-08-20T09:15:00Z" },
   { id: "TCK-2040", subject: "Invoice inv_1023 double-charged card ending 4242", priority: "medium", status: "open", customer: "b.okafor@meridianhealth.com", assignee: "Devon Ruiz", tags: ["billing"], createdAt: "2026-08-19T14:32:00Z" },
   { id: "TCK-2039", subject: "Bulk /export endpoint returns 500 above 10k rows", priority: "critical", status: "in_progress", customer: "platform@fintra.dev", assignee: "Maria Alva", tags: ["api", "bug"], createdAt: "2026-08-19T16:02:00Z" },
   { id: "TCK-2038", subject: "Feature request: CSV export for usage report", priority: "low", status: "open", customer: "sam.iyer@brightloop.co", assignee: null, tags: ["feature-request"], createdAt: "2026-08-20T08:45:00Z" },
